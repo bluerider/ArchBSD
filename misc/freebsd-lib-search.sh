@@ -20,7 +20,7 @@ fi
 
 for file in \
 `find /bin /usr/bin /sbin /usr/sbin -type f -print0 | xargs -0 file | grep ELF | awk  -F ":" '{print $1}'`; do
-      ldd $file 2> /dev/null | grep $match > /dev/null 2>&1; 
+      readelf -dW $file 2> /dev/null | sed -ne '/NEEDED/{s/^.*\[\(.*\)\]$/\1/;p;}' | grep $match > /dev/null 2>&1;
       if [ $? -eq 0 ]; then 
         echo $file depends on $match; 
         pacman -Qo $file;
