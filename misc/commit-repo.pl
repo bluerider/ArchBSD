@@ -201,3 +201,24 @@ while (my ($repo, $files) = each %tarlist) {
 	}
 	chdir $pwd;
 }
+
+# Remove old files
+for my $pkg (@$new_packages) {
+	my ($name, $ver, $target) = @$pkg;
+	my $tar = "$name-$ver-$carch.pkg.tar.xz";
+	my $sig = "$tar.sig";
+	my $dest = "../../../$target/os/$carch";
+	chdir $dest;
+	my @files = <${name}-[0-9]*.pkg.tar.xz>;
+	for my $old (@files) {
+		next if $old eq $tar;
+		if (!$opt_d) {
+			print("Deleting old files: $old $old.sig\n");
+			unlink($old);
+			unlink("${old}.sig");
+		} else {
+			print("NOT deleting old files: $old $old.sig\n");
+		}
+	}
+	chdir $pwd;
+}
