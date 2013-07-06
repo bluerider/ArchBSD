@@ -9,8 +9,31 @@ use File::Copy "cp";
 use File::Temp qw/tempdir/;
 use Cwd;
 
+use Getopt::Std;
+$Getopt::Std::STANDARD_HELP_VERSION = 1;
+
 my $progname = basename($0);
 my $pwd = getcwd;
+
+sub HELPMESSAGE {
+	print <<EOF
+This tool should be executed in a standard repostiroy path
+it will scan the current directory to figure out the
+CARCH and repository name, and will search for the main
+repositories in ../../../<repo>/os/<CARCH>/
+EOF
+;
+	print "usage: $progname [options]\n";
+	print "options:\n";
+	print <<EOF
+  -d    dry run, do not commit any files
+EOF
+;
+}
+
+our ($opt_d);
+getopts('d');
+
 
 if (not ($pwd =~ m@/(?<from_repo>\w+)/os/(?<carch>x86_64|i686)$@)) {
 	print("Failed to figure out the repository name and architecture\n");
@@ -148,10 +171,16 @@ for my $pkg (@new_packages) {
 	my ($name, $ver, $target) = @$pkg;
 	my $tar = "$name-$ver-$carch.pkg.tar.xz";
 	my $sig = "$tar.sig";
-	print("Committing $name $ver to $target\n");
 	my $dest = "../../../$target/os/$carch";
-	cp $tar, "$dest/$tar" or die "Copying $tar to destination failed: $!";
-	cp $sig, "$dest/$sig" or die "Copying $sig to destination failed: $!";
+	if (!$opt_d) {
+		print ("copying: $tar -> $dest/$tar\n");
+		cp $tar, "$dest/$tar" or die "Copying $tar to destination failed: $!";
+		print ("copying: $sig -> $dest/$sig\n");
+		cp $sig, "$dest/$sig" or die "Copying $sig to destination failed: $!";
+	} else {
+		print ("NOT copying: $tar -> $dest/$tar\n");
+		print ("NOT copying: $sig -> $dest/$sig\n");
+	}
 	if (exists($tarlist{$target})) {
 		push @{$tarlist{$target}}, $tar;
 	} else {
@@ -162,9 +191,13 @@ for my $pkg (@new_packages) {
 # Then repo-add them in bulks
 while (my ($repo, $files) = each %tarlist) {
 	chdir ("../../../$repo/os/$carch") or die "failed to change directory to ../../../$repo/os/$carch/";
-	print("Committing to $repo: ", join(", ", @$files), "\n");
-	if (system("repo-add", "$repo.db.tar.gz", @$files) != 0) {
-		print("Failed to commit packages to $repo");
+	if (!$opt_d) {
+		print("Committing to $repo: ", join(", ", @$files), "\n");
+		if (system("repo-add", "$repo.db.tar.gz", @$files) != 0) {
+			print("Failed to commit packages to $repo");
+		}
+	} else {
+		print("NOT committing to $repo: ", join(", ", @$files), "\n");
 	}
 	chdir $pwd;
 }
