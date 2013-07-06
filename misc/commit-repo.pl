@@ -55,15 +55,17 @@ sub add_pkg($$) {
 	}
 }
 
-sub read_db($$) {
-	my ($db, $pkgarray) = @_;
+sub read_db($) {
+	my ($db) = @_;
+	my @pkgarray;
 	open(my $p, '-|', 'tar', '-tf', $db) or die "failed to read database for package list";
 	while (<$p>) {
 		next unless m@/$@;
 		s@/$@@;
-		add_pkg($_, $pkgarray);
+		add_pkg($_, \@pkgarray);
 	}
 	close($p);
+	return \@pkgarray;
 }
 
 sub load_repos() {
@@ -78,10 +80,9 @@ sub load_repos() {
 		#}
 		next unless -e $fromdb;
 
-		my @targpkgs;
-		read_db $fromdb, \@targpkgs;
-		next if 0 == scalar(@targpkgs);
-		$repos{$r} = \@targpkgs;
+		my $targpkgs = read_db $fromdb;
+		next if 0 == scalar(@$targpkgs);
+		$repos{$r} = $targpkgs;
 	}
 
 	return %repos;
@@ -90,38 +91,37 @@ sub load_repos() {
 
 printf("Committing from $repo ($carch)\n");
 
-my @new_packages;
-read_db $db, \@new_packages;
+my $new_packages = read_db $db;
 
-if (scalar(@new_packages) == 0) {
+if (scalar(@$new_packages) == 0) {
 	print("No packages in $db\n");
 	exit(0);
 }
 
 my %repos = load_repos;
 
-sub repo_for($) {
-	my ($name) = @_;
-	while ( my ($repo, $pkgs) = each %repos ) {
-		for my $pkgref (@$pkgs) {
-			return $repo if ($name eq @{$pkgref}[0])
-		}
-	}
-	return undef;
-}
-
 sub set_repo_for($) {
 	my ($pkg) = @_;
+	my $found = undef;
 	keys %repos;
 	OUTER:
 	while ( my ($repo, $pkgs) = each %repos ) {
 		for my $pkgref (@$pkgs) {
 			if (@{$pkg}[0] eq @{$pkgref}[0]) {
-				push @$pkg, $repo;
-				last OUTER;
+				if (defined($found)) {
+					print("WARNING: @{$pkg}[0] exists in multiple repositories!\n");
+					$found = undef;
+					last OUTER;
+				}
+				$found = $repo;
 			}
 		}
 	}
+
+	if (defined($found)) {
+		push @$pkg, $found;
+	}
+
 	if (scalar(@$pkg) == 2) {
 		#print("Don't know which repository contains @{$pkg}[0]\n");
 		my $answer;
@@ -147,7 +147,7 @@ sub set_repo_for($) {
 }
 
 my $err = 0;
-for my $pkg (@new_packages) {
+for my $pkg (@$new_packages) {
 	set_repo_for($pkg);
 	my ($name, $ver, $target) = @$pkg;
 	my $tar = "$name-$ver-$carch.pkg.tar.xz";
@@ -167,7 +167,7 @@ exit(1) if $err;
 
 # First copy all the files
 my %tarlist;
-for my $pkg (@new_packages) {
+for my $pkg (@$new_packages) {
 	my ($name, $ver, $target) = @$pkg;
 	my $tar = "$name-$ver-$carch.pkg.tar.xz";
 	my $sig = "$tar.sig";
