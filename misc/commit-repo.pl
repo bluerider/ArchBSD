@@ -259,3 +259,10 @@ for my $pkg (@$new_packages) {
 	}
 	chdir $pwd;
 }
+
+if (!$opt_d) {
+	print("Removing repository choice temp files...\n");
+	unlink <.repo.for.*> or print("Failed to remove .repo.for.* files\n");
+} else {
+	print("Keeping repository choices.\n");
+}
