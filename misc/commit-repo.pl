@@ -157,14 +157,6 @@ sub set_repo_for($) {
 				remember_repo $pkgname, $answer;
 				last QUESTION;
 			}
-			#keys %repos;
-			#while ( my ($repo, $pkgs) = each %repos ) {
-			#	if ($answer eq $repo) {
-			#		${$pkg}{repo} = $repo;
-			#		remember_repo $pkgname, $repo;
-			#		last QUESTION;
-			#	}
-			#}
 			print("Repository '$answer' has not been found previously!\n");
 			print("Choose repository for $pkgname: ");
 		}
