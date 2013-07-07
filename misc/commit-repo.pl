@@ -148,7 +148,6 @@ sub set_repo_for($) {
 
 my $err = 0;
 for my $pkg (@$new_packages) {
-	set_repo_for($pkg);
 	my ($name, $ver, $target) = @$pkg;
 	my $tar = "$name-$ver-$carch.pkg.tar.xz";
 	my $sig = "$tar.sig";
@@ -167,8 +166,10 @@ for my $pkg (@$new_packages) {
     }
     push @$pkg, ($tar, $sig);
 }
-
-exit(1) if $err;
+die "There have been errors\n" if $err;
+for my $pkg (@$new_packages) {
+	set_repo_for($pkg);
+}
 
 # First copy all the files
 my %tarlist;
