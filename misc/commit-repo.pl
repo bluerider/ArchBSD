@@ -154,6 +154,10 @@ for my $pkg (@$new_packages) {
 	my $sig = "$tar.sig";
     # check for a signature file:
     if (not -e $tar) {
+		$tar = "$name-$ver-any.pkg.tar.xz";
+		$sig = "$tar.sig";
+	}
+    if (not -e $tar) {
     	print("Package archive missing for $name-$ver\n");
     	$err = 1;
     }
@@ -161,6 +165,7 @@ for my $pkg (@$new_packages) {
     	print("Signature missing for $name-$ver\n");
     	$err = 1;
     }
+    push @$pkg, ($tar, $sig);
 }
 
 exit(1) if $err;
@@ -168,9 +173,7 @@ exit(1) if $err;
 # First copy all the files
 my %tarlist;
 for my $pkg (@$new_packages) {
-	my ($name, $ver, $target) = @$pkg;
-	my $tar = "$name-$ver-$carch.pkg.tar.xz";
-	my $sig = "$tar.sig";
+	my ($name, $ver, $target, $tar, $sig) = @$pkg;
 	my $dest = "../../../$target/os/$carch";
 	if (!$opt_d) {
 		print ("copying: $tar -> $dest/$tar\n");
