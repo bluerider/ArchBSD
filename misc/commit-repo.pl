@@ -50,8 +50,8 @@ sub add_pkg($$) {
 	my ($name, $array) = @_;
 
 	if ($name =~ m@^(?<name>.*?)-(?<ver>\d.*)$@) {
-		my @arr = ($+{name}, $+{ver});
-		push @$array, \@arr;
+		my %arr = (name => $+{name}, ver => $+{ver});
+		push @$array, \%arr;
 	}
 }
 
@@ -73,11 +73,6 @@ sub load_repos() {
 
 	for my $r (qw/core extra community/) {
 		my $fromdb = "../../../$r/os/$carch/${r}.db.tar.gz";
-		#my $targdb = "$workdir/${r}.db.tar.gz";
-		#unless (cp($fromdb, $targdb)) {
-  	  	#  print "${r}.db.tar.gz not found in ../../../$r/os/$carch/\n";
-  	  	#  next;
-		#}
 		next unless -e $fromdb;
 
 		my $targpkgs = read_db $fromdb;
@@ -100,81 +95,123 @@ if (scalar(@$new_packages) == 0) {
 
 my %repos = load_repos;
 
+sub remember_repo($$) {
+	my ($name, $repo) = @_;
+
+	my $remember;
+	unless (open $remember, '>', ".repo.for.$name") {
+		print("warning: cannot remember repository choice\n");
+		return;
+	}
+	print {$remember} "$repo\n";
+	close $remember;
+}
+
+sub repo_chosen($) {
+	my ($name) = @_;
+	my $f;
+	return undef
+	  unless (open $f, '<', ".repo.for.$name");
+	my $line = <$f>;
+	close($f);
+	chomp $line;
+	if (exists($repos{$line})) {
+		print "Remembered repo for $name: $line\n";
+		return $line;
+	}
+	return undef;
+}
+
 sub set_repo_for($) {
 	my ($pkg) = @_;
-	my $found = undef;
-	keys %repos;
-	OUTER:
-	while ( my ($repo, $pkgs) = each %repos ) {
-		for my $pkgref (@$pkgs) {
-			if (@{$pkg}[0] eq @{$pkgref}[0]) {
-				if (defined($found)) {
-					print("WARNING: @{$pkg}[0] exists in multiple repositories!\n");
-					$found = undef;
-					last OUTER;
+	my $pkgname = ${$pkg}{name};
+	my $found = repo_chosen $pkgname;
+	if (!defined($found)) {
+		keys %repos;
+		OUTER:
+		while ( my ($repo, $pkgs) = each %repos ) {
+			for my $pkgref (@$pkgs) {
+				if ($pkgname eq ${$pkgref}{name}) {
+					if (defined($found)) {
+						print("WARNING: $pkgname exists in multiple repositories!\n");
+						$found = undef;
+						last OUTER;
+					}
+					$found = $repo;
 				}
-				$found = $repo;
 			}
 		}
 	}
 
-	if (defined($found)) {
-		push @$pkg, $found;
-	}
+	${$pkg}{repo} = $found;
 
-	if (scalar(@$pkg) == 2) {
-		#print("Don't know which repository contains @{$pkg}[0]\n");
+	if (!defined(${$pkg}{repo})) {
 		my $answer;
-		print("Choose repository for @{$pkg}[0]: ");
+		print("Choose repository for $pkgname: ");
 		$| = 1;
 		QUESTION:
 		while (defined($answer = <>)) {
 			chomp($answer);
-			keys %repos;
-			while ( my ($repo, $pkgs) = each %repos ) {
-				if ($answer eq $repo) {
-					push @$pkg, $repo;
-					last QUESTION;
-				}
+			if (exists($repos{$answer})) {
+				${$pkg}{repo} = $repo;
+				remember_repo $pkgname, $answer;
+				last QUESTION;
 			}
+			#keys %repos;
+			#while ( my ($repo, $pkgs) = each %repos ) {
+			#	if ($answer eq $repo) {
+			#		${$pkg}{repo} = $repo;
+			#		remember_repo $pkgname, $repo;
+			#		last QUESTION;
+			#	}
+			#}
 			print("Repository '$answer' has not been found previously!\n");
-			print("Choose repository for @{$pkg}[0]: ");
+			print("Choose repository for $pkgname: ");
 		}
-		if (scalar(@$pkg) == 2) {
-			exit(0);
+		if (!defined(${$pkg}{repo})) {
+			exit(1);
 		}
 	}
 }
 
 my $err = 0;
+print("*** checking files...\n");
 for my $pkg (@$new_packages) {
-	my ($name, $ver, $target) = @$pkg;
-	my $tar = "$name-$ver-$carch.pkg.tar.xz";
-	my $sig = "$tar.sig";
+	my $name = ${$pkg}{name};
+	my $ver  = ${$pkg}{ver};
+	my $tar  = "$name-$ver-$carch.pkg.tar.xz";
     # check for a signature file:
     if (not -e $tar) {
 		$tar = "$name-$ver-any.pkg.tar.xz";
-		$sig = "$tar.sig";
 	}
     if (not -e $tar) {
     	print("Package archive missing for $name-$ver\n");
     	$err = 1;
     }
+	my $sig = "$tar.sig";
     if (not -e $sig) {
     	print("Signature missing for $name-$ver\n");
     	$err = 1;
     }
-    push @$pkg, ($tar, $sig);
+    ${$pkg}{tar} = $tar;
+    ${$pkg}{sig} = $sig;
 }
 die "There have been errors\n" if $err;
+
+print("*** finding target repositories...\n");
 for my $pkg (@$new_packages) {
 	set_repo_for($pkg);
 }
 
 # First copy all the files
 my %tarlist;
+print("*** copying files...\n");
 for my $pkg (@$new_packages) {
-	my ($name, $ver, $target, $tar, $sig) = @$pkg;
+	my $name   = ${$pkg}{name};
+	my $ver    = ${$pkg}{ver};
+	my $target = ${$pkg}{repo};
+	my $tar    = ${$pkg}{tar};
+	my $sig    = ${$pkg}{sig};
 	my $dest = "../../../$target/os/$carch";
 	if (!$opt_d) {
 		print ("copying: $tar -> $dest/$tar\n");
@@ -193,6 +230,7 @@ for my $pkg (@$new_packages) {
 }
 
 # Then repo-add them in bulks
+print("*** adding packages...\n");
 while (my ($repo, $files) = each %tarlist) {
 	chdir ("../../../$repo/os/$carch") or die "failed to change directory to ../../../$repo/os/$carch/";
 	if (!$opt_d) {
@@ -207,10 +245,13 @@ while (my ($repo, $files) = each %tarlist) {
 }
 
 # Remove old files
+print("*** cleaning up...\n");
 for my $pkg (@$new_packages) {
-	my ($name, $ver, $target) = @$pkg;
-	my $tar = "$name-$ver-$carch.pkg.tar.xz";
-	my $sig = "$tar.sig";
+	my $name   = ${$pkg}{name};
+	my $ver    = ${$pkg}{ver};
+	my $target = ${$pkg}{repo};
+	my $tar    = ${$pkg}{tar};
+	my $sig    = ${$pkg}{sig};
 	my $dest = "../../../$target/os/$carch";
 	chdir $dest;
 	my @files = <${name}-[0-9]*.pkg.tar.xz>;
