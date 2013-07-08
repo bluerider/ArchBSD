@@ -251,8 +251,8 @@ for my $pkg (@$new_packages) {
 		next if $old eq $tar;
 		if (!$opt_d) {
 			print("Deleting old files: $old $old.sig\n");
-			unlink($old);
-			unlink("${old}.sig");
+			unlink($old) or print("Failed to remove $old");
+			unlink("${old}.sig") or print("Failed to remove ${old}.sig");
 		} else {
 			print("NOT deleting old files: $old $old.sig\n");
 		}
