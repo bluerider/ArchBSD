@@ -228,7 +228,7 @@ while (my ($repo, $files) = each %tarlist) {
 	if (!$opt_d) {
 		print("Committing to $repo: ", join(", ", @$files), "\n");
 		if (system('repo-add', '-f', "$repo.db.tar.gz", @$files) != 0) {
-			print("Failed to commit packages to $repo");
+			die("Failed to commit packages to $repo");
 		}
 	} else {
 		print("NOT committing to $repo: ", join(", ", @$files), "\n");
