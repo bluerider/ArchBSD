@@ -227,7 +227,7 @@ while (my ($repo, $files) = each %tarlist) {
 	chdir ("../../../$repo/os/$carch") or die "failed to change directory to ../../../$repo/os/$carch/";
 	if (!$opt_d) {
 		print("Committing to $repo: ", join(", ", @$files), "\n");
-		if (system("repo-add", "$repo.db.tar.gz", @$files) != 0) {
+		if (system('repo-add', '-f', "$repo.db.tar.gz", @$files) != 0) {
 			print("Failed to commit packages to $repo");
 		}
 	} else {
