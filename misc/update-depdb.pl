@@ -120,6 +120,11 @@ while (my ($name, $pkg) = each %packages) {
 	push @tarlist, ${$pkg}{tar};
 }
 
+if (scalar(keys, %packages) == 0) {
+	print("No packages to upgrade\n") unless $opt_q;
+	exit 0;
+}
+
 if ($opt_d) {
 	exec @depdb_params, '--dry', '-i', @tarlist;
 } else {
