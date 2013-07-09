@@ -22,12 +22,13 @@ sub HELPMESSAGE {
 options:
   -q   suppress some output
   -d   add --try to the pkgdepdb commandline
+  -r   reinstall same-version packages
 EOF
 ;
 }
 
-our ($opt_q, $opt_d, $opt_h);
-getopts('qdh');
+our ($opt_q, $opt_d, $opt_h, $opt_r);
+getopts('qdhr');
 
 if ($opt_h) {
 	HELPMESSAGE;
@@ -100,7 +101,12 @@ for my $pkghash (@$installed) {
 		delete $packages{$name};
 	}
 	elsif ($cmp == 0) {
-		print("Reinstalling $name version $dbver\n") unless $opt_q;
+		if ($opt_r) {
+			print("Reinstalling $name version $dbver\n") unless $opt_q;
+			next;
+		}
+		# without -r we don't reinstall
+		delete $packages{$name};
 	}
 	else {
 		# existing one is older, this is fine
