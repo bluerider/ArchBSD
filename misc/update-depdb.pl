@@ -95,7 +95,7 @@ for my $pkghash (@$installed) {
 	my $dbver = ${$pkghash}{version};
 	my $flver = ${$existing}{ver};
 	my $cmp = vercmp($dbver, $flver);
-	if ($cmp < 0) {
+	if ($cmp > 0) {
 		# existing is newer
 		print("A newer version of $name is already in place: $dbver (found version $flver)\n");
 		delete $packages{$name};
