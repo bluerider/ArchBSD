@@ -6,7 +6,6 @@ use v5.10;
 
 use File::Basename;
 use File::Copy "cp";
-use File::Temp qw/tempdir/;
 use Cwd;
 
 use Getopt::Std;
