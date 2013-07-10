@@ -70,7 +70,7 @@ sub read_db($) {
 sub load_repos() {
 	my %repos;
 
-	for my $r (qw/core extra community/) {
+	for my $r (qw/core extra community multilib/) {
 		my $fromdb = "../../../$r/os/$carch/${r}.db.tar.gz";
 		next unless -e $fromdb;
 
