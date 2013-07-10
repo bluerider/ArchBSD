@@ -35,14 +35,17 @@ if ($opt_h) {
 	exit 0;
 }
 
-if (scalar(@ARGV) != 1) {
+if (scalar(@ARGV) > 1) {
 	HELPMESSAGE;
 	exit 1;
 }
 
-my $depdb = $ARGV[0];
-
-my @depdb_params = ( 'pkgdepdb', '--db', $depdb, '--json=query' );
+my @depdb_params;
+if (scalar(@ARGV) == 1) {
+	@depdb_params = ( 'pkgdepdb', '--db', $ARGV[0], '--json=query' );
+} else {
+	@depdb_params = ( 'pkgdepdb', '--json=query' );
+}
 
 # Part 1: check for dups (this should have happened already)
 
@@ -53,6 +56,7 @@ sub vercmp($$) {
 	open $p, '-|', 'vercmp', @_;
 	my $res= <$p>;
 	close($p);
+	die "vercmp failed with status $?" if ($?);
 	return $res;
 }
 
@@ -81,6 +85,7 @@ for my $file (<*.pkg.tar.xz>) {
 open my $pdb, '-|', @depdb_params, '--quiet', '-P';
 my $installed_json = do { local $/; <$pdb> };
 close $pdb;
+die "pkgdepdb failed with status $?" if ($?);
 my $pdb_installed = decode_json($installed_json);
 
 my $installed = ${$pdb_installed}{packages};
