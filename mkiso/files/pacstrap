@@ -209,10 +209,6 @@ if (( ! hostcache )); then
   pacman_args+=(--cachedir="$newroot/var/cache/pacman/pkg")
 fi
 
-if (( ! interactive )); then
-  pacman_args+=(--noconfirm)
-fi
-
 if [[ $pacman_config ]]; then
   pacman_args+=(--config="$pacman_config")
 fi

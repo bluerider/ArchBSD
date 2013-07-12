@@ -10,7 +10,6 @@ temproot=${curdir}/ArchBSD_temp
 isoroot=${curdir}/ArchBSD
 files=${curdir}/files
 #Since we're not checkign deps, and need libiconv and bash installed in the correct order
-paclist_first="libiconv"
 packagelist="archbsd-keyring ca_root_nss curl cyrus-sasl gnupg gpgme libarchive libassuan libgcrypt libgpg-error libksba libldap libsasl libtool pacman-mirrorlist pinentry pkgconf pth freebsd-kernel gcc-libs libpthread-stubs openrc pacman nano"
 date=`date +"%d%m%Y"`
 
@@ -77,14 +76,14 @@ copydirs() {
 }
 
 package_install() {
-	pacman -Sydd --force libiconv -r ${isoroot} --cachedir ${temproot}/var/cache/pacman/pkg/
-	pacman -Sy --force bash -r ${isoroot} --cachedir ${temproot}/var/cache/pacman/pkg/
-	pacman -Sydd --force ${packagelist} -r ${isoroot} --cachedir ${temproot}/var/cache/pacman/pkg/
+	pacman -Sydd --force libiconv -r ${isoroot} --cachedir ${temproot}/var/cache/pacman/pkg/ --noconfirm
+	pacman -Sy --force bash -r ${isoroot} --cachedir ${temproot}/var/cache/pacman/pkg/ --noconfirm
+	pacman -Sydd --force ${packagelist} -r ${isoroot} --cachedir ${temproot}/var/cache/pacman/pkg/ --noconfirm
 }
 
 grub_install() {
 	grubpath=${isoroot}/boot/grub/
-	pacman -Sydd grub-common grub-bios -r ${isoroot} --cachedir ${temproot}/var/cache/pacman/pkg/
+	pacman -Sydd grub-common grub-bios -r ${isoroot} --cachedir ${temproot}/var/cache/pacman/pkg/ --noconfirm
 	
         mv ${isoroot}/usr/lib/grub/i386-pc* ${grubpath}
 	
@@ -93,10 +92,13 @@ grub_install() {
 }
 
 config_setup() {
+	#mount dev to add keys
+	mount -t devfs devfs ${isoroot}/dev
 	cp ${files}/fstab ${isoroot}/etc/fstab
 	cp ${files}/cshrc ${isoroot}/root/.cshrc		
 	rm -f ${isoroot}/etc/runlevels/boot/root
 	chroot ${isoroot} /sbin/rc-update add modules default
+	chroot ${isoroot} /sbin/rc-update add devd default
         chroot ${isoroot} /sbin/ldconfig -m /lib
         chroot ${isoroot} /sbin/ldconfig -m /usr/lib
         chroot ${isoroot} /sbin/ldconfig -m /usr/local/lib
@@ -106,7 +108,10 @@ config_setup() {
  	install -m644 ${files}/pacstrap ${isoroot}/usr/bin/pacstrap
 	chmod +x ${isoroot}/usr/bin/pacstrap	
 	cp -a /etc/pacman.d/gnupg "$isoroot/etc/pacman.d/"
- 
+	chroot ${isoroot} /usr/bin/pacman-key --init
+        chroot ${isoroot} /usr/bin/pacman-key --populate archbsd
+ 	#unmount devfs
+	umount ${isoroot}/dev
 }
 
 make_iso() {
