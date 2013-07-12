@@ -5,6 +5,7 @@
 /usr/sbin/wpa_passphrase
 /usr/sbin/wpa_supplicant
 /boot/device.hints
+/usr/bin/install-info
 /usr/bin/bzip2
 /usr/bin/bzip2recover
 /usr/bin/cap_mkdb

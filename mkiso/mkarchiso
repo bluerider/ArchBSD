@@ -9,7 +9,9 @@ curdir=`pwd`
 temproot=${curdir}/ArchBSD_temp
 isoroot=${curdir}/ArchBSD
 files=${curdir}/files
-packagelist="archbsd-keyring bash ca_root_nss curl cyrus-sasl gettext gnupg gpgme libarchive libassuan libgcrypt libgpg-error libiconv libksba libldap libltdl libsasl libtool pacman-mirrorlist pinentry pkgconf pth freebsd-kernel gcc-libs libpthread-stubs openrc pacman"
+#Since we're not checkign deps, and need libiconv and bash installed in the correct order
+paclist_first="libiconv"
+packagelist="archbsd-keyring ca_root_nss curl cyrus-sasl gnupg gpgme libarchive libassuan libgcrypt libgpg-error libksba libldap libsasl libtool pacman-mirrorlist pinentry pkgconf pth freebsd-kernel gcc-libs libpthread-stubs openrc pacman nano"
 date=`date +"%d%m%Y"`
 
 check() {
@@ -75,6 +77,8 @@ copydirs() {
 }
 
 package_install() {
+	pacman -Sydd --force libiconv -r ${isoroot} --cachedir ${temproot}/var/cache/pacman/pkg/
+	pacman -Sy --force bash -r ${isoroot} --cachedir ${temproot}/var/cache/pacman/pkg/
 	pacman -Sydd --force ${packagelist} -r ${isoroot} --cachedir ${temproot}/var/cache/pacman/pkg/
 }
 
