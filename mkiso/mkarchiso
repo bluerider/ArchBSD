@@ -106,7 +106,7 @@ config_setup() {
  	install -m644 ${files}/pacstrap ${isoroot}/usr/bin/pacstrap
 	chmod +x ${isoroot}/usr/bin/pacstrap	
 	cp -a /etc/pacman.d/gnupg "$isoroot/etc/pacman.d/"
-
+ 
 }
 
 make_iso() {
