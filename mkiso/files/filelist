@@ -8,6 +8,8 @@
 /usr/bin/bzip2
 /usr/bin/bzip2recover
 /usr/bin/cap_mkdb
+/usr/bin/ee
+/usr/bin/vi
 /usr/bin/chfn
 /usr/bin/chgrp
 /usr/bin/chkey
