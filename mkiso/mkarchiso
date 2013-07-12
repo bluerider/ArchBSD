@@ -75,17 +75,15 @@ copydirs() {
 }
 
 package_install() {
-	pacman -Sydd --force ${packagelist} -r ${isoroot} --cachedir ${isoroot}/var/cache/pacman/pkg/
+	pacman -Sydd --force ${packagelist} -r ${isoroot} --cachedir ${temproot}/var/cache/pacman/pkg/
 }
 
 grub_install() {
 	grubpath=${isoroot}/boot/grub/
-	pacman -Sydd grub-common grub-bios -r ${isoroot} --cachedir ${isoroot}/var/cache/pacman/pkg/
+	pacman -Sydd grub-common grub-bios -r ${isoroot} --cachedir ${temproot}/var/cache/pacman/pkg/
 	
         mv ${isoroot}/usr/lib/grub/i386-pc* ${grubpath}
 	
-	ln -s ${isoroot}/usr/lib/grub/i386-pc/* ${grubpath}
-
 	cp ${files}/{grub.cfg,eltorito.img,splash.png,font.pf2} ${grubpath}
 	
 }
