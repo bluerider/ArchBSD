@@ -72,7 +72,7 @@ while getopts ":hknxyuCsSi:" opt; do
 		y) opt_nosync=1 ;;
 		u) opt_update_install=1; opt_existing_install=1 ;;
 		C) opt_confirm="" ;;
-		i) opt_install=("${opt_install[@]}" $OPTARG) ;;
+		i) opt_update_install=1; opt_install=("${opt_install[@]}" $OPTARG) ;;
 		\:) usage ; exit 1 ;;
 		\?) usage ; exit 1 ;;
 		*) : ;;
