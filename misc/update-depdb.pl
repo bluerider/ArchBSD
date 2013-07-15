@@ -65,7 +65,8 @@ for my $file (<*.pkg.tar.xz>) {
 	print "WARNING: missing signature for $file\n" unless $opt_q or -e "${file}.sig";
 
 	# get the name
-	if (not($file =~ m@^(?<name>.*?(?=-\d))-(?<version>\d[^-]*-\d[^-]*)-(?:x86_64|i686|any)\.pkg\.tar\.xz$@)) {
+	#if (not($file =~ m@^(?<name>.*?(?=-\d))-(?<version>\d[^-]*-\d[^-]*)-(?:x86_64|i686|any)\.pkg\.tar\.xz$@)) {
+	if (not($file =~ m@^(?<name>.*)-(?<version>[^-]+-\d[^-]*)-(?:x86_64|i686|any)\.pkg\.tar\.xz$@)) {
 		print "WARNING: archive not recognized as a package: $file\n";
 		next;
 	}
