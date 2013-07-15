@@ -1,5 +1,5 @@
 #!/bin/sh
-# Put this file here: ~/.config/archbsd-build/settings
+# Put this file here: /etc/archbsd-build.conf
 
 #cachedir=/var/cache/pacman/pkg
 
