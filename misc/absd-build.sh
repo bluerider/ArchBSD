@@ -267,7 +267,7 @@ if (( $opt_shell == 1 )); then
 	msg "Entering chroot as builder"
 	chroot "${builddir}" /usr/bin/su -l builder
 elif (( $opt_shell == 2 )); then
-	msg "Entering chroot as builder"
+	msg "Entering chroot as root"
 	chroot "${builddir}" /usr/bin/bash
 else
 	msg "Starting build"
