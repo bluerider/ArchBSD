@@ -41,7 +41,7 @@ progname=${0##*/}
 usage() {
 	cat <<EOF
 usage: $progname [-hkexyCi] <repo> <package>
-  -h      showt his help
+  -h      show this help
   -k      remove the build dir and quit
   -n      don't clean the build dir (useful for continuing)
   -x      use the existing build dir instead of reinstalling

@@ -1,0 +1,9 @@
+#!/usr/bin/bash
+
+ldconfig -m /lib
+ldconfig -m /usr/li
+ldconfig -m /lisr/lib/fakeroo
+ldconfig -m /usr/lib/pt
+ldconfig -m /usr/local/li
+ldconfig -m /usr/lib32
+ldconfig -R
