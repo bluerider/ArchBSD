@@ -10,3 +10,4 @@ buildtop=/home/wry/ABSD-Build
 #package_output=${buildtop}/output
 #builder_bashrc=${buildtop}/bashrc
 #setup_script=${buildtop}/setup_root
+#prepare_script=${buildtop}/prepare_root
