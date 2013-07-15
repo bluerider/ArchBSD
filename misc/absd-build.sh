@@ -30,6 +30,7 @@ source "$configfile"
 package_output=${package_output:-${buildtop}/output}
 builder_bashrc=${builder_bashrc:-${buildtop}/bashrc}
 setup_script=${setup_script:-${buildtop}/setup_root}
+prepare_script=${prepare_script:-${buildtop}/prepare_root}
 
 do_unmount() {
 	umount "${builddir}"/{dev,proc,var/cache/pacman/pkg}
@@ -215,6 +216,10 @@ mount_nullfs {,"${builddir}"}/var/cache/pacman/pkg || die "Failed to bind packag
 mount -t devfs devfs "${builddir}/dev" || die "Failed to mount devfs"
 mount -t procfs procfs "${builddir}/proc" || die "Failed to mount procfs"
 
+msg "Running setup script %s" "$setup_script"
+install -m644 "$setup_script" "${builddir}/root/setup.sh"
+chroot "${builddir}" /usr/bin/bash /root/setup.sh
+
 #
 # Create the user:
 #
@@ -259,9 +264,9 @@ chroot "${builddir}" /usr/bin/bash -c "cd /home/builder/package && makepkg ${syn
 chroot "${builddir}" /usr/bin/bash -c "cd /home/builder/package && rm -rf pkg src"        || die "Failed to clean package build directory"
 chroot "${builddir}" /usr/bin/bash -c "chown -R builder:builder /home/builder/package"    || die "Failed to reown package directory"
 
-msg "Running setup script %s" "$setup_script"
-install -m644 "$setup_script" "${builddir}/root/setup.sh"
-chroot "${builddir}" /usr/bin/bash /root/setup.sh
+msg "Running prepare script %s" "$prepare_script"
+install -m644 "$prepare_script" "${builddir}/root/prepare.sh"
+chroot "${builddir}" /usr/bin/bash /root/prepare.sh
 
 if (( $opt_shell == 1 )); then
 	msg "Entering chroot as builder"
