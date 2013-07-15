@@ -136,6 +136,7 @@ repo="$1"
 package="$2"
 
 fullpath="$abstree/$repo/$package"
+fulloutput="$package_output/$repo"
 
 #
 # Check options
@@ -274,8 +275,8 @@ else
 	chroot "${builddir}" /usr/bin/su -l builder -c "cd ~/package && makepkg" || die "Failed to build package"
 	
 	msg "Copying package archives"
-	mkdir -p "$package_output"
-	mv "${builddir}/home/builder/package/"*.pkg.tar.xz "$package_output" ||
+	mkdir -p "$fulloutput"
+	mv "${builddir}/home/builder/package/"*.pkg.tar.xz "$fulloutput" ||
 		die "Failed to fetch packages..."
 fi
 msg "Unmounting stuff"
