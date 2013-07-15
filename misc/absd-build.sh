@@ -29,7 +29,7 @@ source "$configfile"
 
 package_output=${package_output:-${buildtop}/output}
 builder_bashrc=${builder_bashrc:-${buildtop}/bashrc}
-setup_script=${builder_bashrc:-${buildtop}/setup_root}
+setup_script=${setup_script:-${buildtop}/setup_root}
 
 do_unmount() {
 	umount "${builddir}"/{dev,proc,var/cache/pacman/pkg}
@@ -259,10 +259,9 @@ chroot "${builddir}" /usr/bin/bash -c "cd /home/builder/package && makepkg ${syn
 chroot "${builddir}" /usr/bin/bash -c "cd /home/builder/package && rm -rf pkg src"        || die "Failed to clean package build directory"
 chroot "${builddir}" /usr/bin/bash -c "chown -R builder:builder /home/builder/package"    || die "Failed to reown package directory"
 
-msg "Running setup script"
+msg "Running setup script %s" "$setup_script"
 install -m644 "$setup_script" "${builddir}/root/setup.sh"
 chroot "${builddir}" /usr/bin/bash /root/setup.sh
-
 
 if (( $opt_shell == 1 )); then
 	msg "Entering chroot as builder"
