@@ -118,7 +118,35 @@ rmdir /tmp/boot
 mkdir /mnt/boot
 mount /dev/${boot} /mnt/boot
 
+# INSTALL ARCHBSD HERE
+
 msg " Copying zpool.cache..."
 mkdir /mnt/boot/zfs
 cp /boot/zfs/zpool.cache /mnt/boot/zfs/zpool.cache
+
+msg " Adding config-stuff to boot/loader.conf"
+echo 'geom_eli_load="YES"' >> /mnt/boot/loader.conf
+for disk in ${ROOT[@]}; do
+	echo << EOF >> /mnt/boot/loader.conf
+	geli_${disk}p1_keyfile0_load="YES"
+	geli_${disk}p1_keyfile0_type="${disk}p1:geli_keyfile0"
+	geli_${disk}p1_keyfile0_name="/boot/root.key"
+	EOF
+done
+echo << EOF >> /mnt/boot/loader.conf
+zfs_load="YES"
+vfs.root.mountfrom="zfs:${TANK_NAME}/ROOT/archbsd-0"
+EOF
+
+zfs set bootfs=${TANK_NAME}/ROOT/archbsd-0 ${TANK_NAME}
+
+RET=$(pacman -Qsq freebsd-init)
+if [ $? -eq 0 ]; then # we has freebsd-init
+	msg " Enabling ZFS for FreeBSD-init"
+	echo 'zfs_enable="YES"' >> /mnt/etc/rc.conf
+else	# we probably have openrc...
+	msg " Enableding ZFS for OpenRC"
+	rc-update add zfs default
+fi
+
 
