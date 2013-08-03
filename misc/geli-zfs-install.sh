@@ -28,6 +28,7 @@ if [ "$1" == "clean" ]; then
 	if [ $? -eq 0 ]; then
 		$(umount /boot/zfs)
 		$(mdconfig -d -u 2)
+	fi
 	$(mount | grep "/mnt/boot")
 	if [ $? -eq 0 ]; then
 		$(umount /mnt/boot)
