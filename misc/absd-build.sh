@@ -135,6 +135,11 @@ fi
 
 repo="$1"
 package="$2"
+# updated msg:
+msg() {
+	local mesg=$1; shift
+	printf "\033[1;34m==>\033[0;0m [$repo/$package] ${mesg}\n" "$@"
+}
 
 fullpath="$abstree/$repo/$package"
 fulloutput="$package_output/$repo"
