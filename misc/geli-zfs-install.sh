@@ -100,6 +100,7 @@ mount /dev/md2 /boot/zfs
 
 msg " Re-importing zpool..."
 zpool export ${TANK_NAME}
+# this will scream until /mnt is rw...
 zpool import -o altroot=/mnt -o cachefile=/boot/zfs/zpool.cache -f ${TANK_NAME}
 
 msg " Setting up zfs checksum..."
@@ -114,6 +115,7 @@ zfs create -o compression=off -o mountpoint=/root ${TANK_NAME}/ROOT/root
 msg " Remounting boot..."
 umount /tmp/boot
 rmdir /tmp/boot
+mkdir /mnt/boot
 mount /dev/${boot} /mnt/boot
 
 msg " Copying zpool.cache..."
