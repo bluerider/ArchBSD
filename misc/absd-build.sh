@@ -49,6 +49,7 @@ usage: $progname [-hkexyCi] <repo> <package>
   -C      do not use the --noconfirm option on commands
   -s      open a shell in the chroot as builder
   -S      open a shell in the chroot as root
+  -R      add -R to makepkg
   -i PKG  install this package before building (NOT recommended)
 EOF
 }
@@ -61,8 +62,9 @@ opt_kill=0
 opt_update_install=0
 opt_shell=0
 opt_install=()
+opt_repackage=0
 OPTIND=1
-while getopts ":hknxyuCsSi:" opt; do
+while getopts ":hknxyuCsRSi:" opt; do
 	case $opt in
 		h) usage; exit 0;;
 		k) opt_kill=1 ;;
@@ -74,12 +76,19 @@ while getopts ":hknxyuCsSi:" opt; do
 		u) opt_update_install=1; opt_existing_install=1 ;;
 		C) opt_confirm="" ;;
 		i) opt_update_install=1; opt_install=("${opt_install[@]}" $OPTARG) ;;
+		R) opt_noclean=1 ; opt_existing_install=1 ; opt_repackage=1 ;;
 		\:) usage ; exit 1 ;;
 		\?) usage ; exit 1 ;;
 		*) : ;;
 	esac
 done
 shift $((OPTIND-1))
+
+if [[ $opt_repackage == 1 ]]; then
+	makepkgargs=(-R)
+else
+	makepkgargs=()
+fi
 
 msg "Additional packages: ${opt_install[@]}"
 
@@ -266,7 +275,7 @@ done
 msg "Syncing dependencies"
 synccmd=(--asroot --nobuild --syncdeps --noconfirm --noextract)
 chroot "${builddir}" /usr/bin/bash -c "cd /home/builder/package && makepkg ${synccmd[*]}" || die "Failed to sync package dependencies"
-chroot "${builddir}" /usr/bin/bash -c "cd /home/builder/package && rm -rf pkg src"        || die "Failed to clean package build directory"
+[[ $opt_repackage == 1 ]] || chroot "${builddir}" /usr/bin/bash -c "cd /home/builder/package && rm -rf pkg src"        || die "Failed to clean package build directory"
 chroot "${builddir}" /usr/bin/bash -c "chown -R builder:builder /home/builder/package"    || die "Failed to reown package directory"
 
 msg "Running prepare script %s" "$prepare_script"
@@ -281,7 +290,7 @@ elif (( $opt_shell == 2 )); then
 	chroot "${builddir}" /usr/bin/bash
 else
 	msg "Starting build"
-	chroot "${builddir}" /usr/bin/su -l builder -c "cd ~/package && makepkg" || die "Failed to build package"
+	chroot "${builddir}" /usr/bin/su -l builder -c "cd ~/package && makepkg ${makepkgargs[*]}" || die "Failed to build package"
 	
 	msg "Copying package archives"
 	mkdir -p "$fulloutput"
