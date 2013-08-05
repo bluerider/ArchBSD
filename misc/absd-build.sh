@@ -50,6 +50,7 @@ usage: $progname [-hkexyCi] <repo> <package>
   -s      open a shell in the chroot as builder
   -S      open a shell in the chroot as root
   -R      add -R to makepkg
+  -e      pass -e to makepkg (keeping previous pkg/ and src/ dirs intact)
   -i PKG  install this package before building (NOT recommended)
 EOF
 }
@@ -63,8 +64,9 @@ opt_update_install=0
 opt_shell=0
 opt_install=()
 opt_repackage=0
+opt_keepbuild=0
 OPTIND=1
-while getopts ":hknxyuCsRSi:" opt; do
+while getopts ":hknxyuCsReSi:" opt; do
 	case $opt in
 		h) usage; exit 0;;
 		k) opt_kill=1 ;;
@@ -76,7 +78,8 @@ while getopts ":hknxyuCsRSi:" opt; do
 		u) opt_update_install=1; opt_existing_install=1 ;;
 		C) opt_confirm="" ;;
 		i) opt_update_install=1; opt_install=("${opt_install[@]}" $OPTARG) ;;
-		R) opt_noclean=1 ; opt_existing_install=1 ; opt_repackage=1 ;;
+		R) opt_noclean=1 ; opt_existing_install=1 ; opt_repackage=1 ; opt_keepbuild=1 ;;
+		e) opt_keepbuild=1 ;;
 		\:) usage ; exit 1 ;;
 		\?) usage ; exit 1 ;;
 		*) : ;;
@@ -84,10 +87,13 @@ while getopts ":hknxyuCsRSi:" opt; do
 done
 shift $((OPTIND-1))
 
+makepkgargs=()
+
 if [[ $opt_repackage == 1 ]]; then
-	makepkgargs=(-R)
-else
-	makepkgargs=()
+	makepkgargs=("${makepkgargs[@]}" -R)
+fi
+if [[ $opt_keepbuild == 1 ]]; then
+	makepkgargs=("${makepkgargs[@]}" -e)
 fi
 
 msg "Additional packages: ${opt_install[@]}"
@@ -275,7 +281,7 @@ done
 msg "Syncing dependencies"
 synccmd=(--asroot --nobuild --syncdeps --noconfirm --noextract)
 chroot "${builddir}" /usr/bin/bash -c "cd /home/builder/package && makepkg ${synccmd[*]}" || die "Failed to sync package dependencies"
-[[ $opt_repackage == 1 ]] || chroot "${builddir}" /usr/bin/bash -c "cd /home/builder/package && rm -rf pkg src"        || die "Failed to clean package build directory"
+[[ $opt_keepbuild == 1 ]] || chroot "${builddir}" /usr/bin/bash -c "cd /home/builder/package && rm -rf pkg src"        || die "Failed to clean package build directory"
 chroot "${builddir}" /usr/bin/bash -c "chown -R builder:builder /home/builder/package"    || die "Failed to reown package directory"
 
 msg "Running prepare script %s" "$prepare_script"
