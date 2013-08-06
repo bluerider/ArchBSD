@@ -21,6 +21,8 @@ esac
 uplist=()
 for i in "$@"; do
 	[ -f "${i}.sig" ] || gpg --detach-sign "$i" || die "signing failed"
+	gpg --verify "./${i}.sig" || \
+		gpg --detach-sign "$i" || die "can't sign package"
 	uplist=("${uplist[@]}" "./$i" "./${i}.sig")
 done
 
