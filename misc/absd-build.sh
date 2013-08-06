@@ -77,7 +77,7 @@ while getopts ":hknxyuCsSRei:" opt; do
 		S) opt_shell=2 ;;
 		x) opt_existing_install=1 ; opt_noclean=1 ;;
 		y) opt_nosync=1 ;;
-		u) opt_update_install=1; opt_existing_install=1 ;;
+		u) opt_update_install=1; opt_existing_install=1 ; opt_noclean=1 ;;
 		C) opt_confirm="" ;;
 		i) opt_update_install=1; opt_install=("${opt_install[@]}" $OPTARG) ;;
 		R) opt_noclean=1 ; opt_existing_install=1 ; opt_repackage=1 ; opt_keepbuild=1 ;;
