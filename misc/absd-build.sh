@@ -40,12 +40,14 @@ want_unmount=0
 progname=${0##*/}
 usage() {
 	cat <<EOF
-usage: $progname [-hkexyCi] <repo> <package>
+usage: $progname [options] <repo> <package>
+options:
   -h      show this help
   -k      remove the build dir and quit
   -n      don't clean the build dir (useful for continuing)
   -x      use the existing build dir instead of reinstalling
   -y      don't sync the repositories via pacman -Sy
+  -u      update an existing chroot
   -C      do not use the --noconfirm option on commands
   -s      open a shell in the chroot as builder
   -S      open a shell in the chroot as root
@@ -66,7 +68,7 @@ opt_install=()
 opt_repackage=0
 opt_keepbuild=0
 OPTIND=1
-while getopts ":hknxyuCsReSi:" opt; do
+while getopts ":hknxyuCsSRei:" opt; do
 	case $opt in
 		h) usage; exit 0;;
 		k) opt_kill=1 ;;
