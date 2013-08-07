@@ -1,7 +1,7 @@
 #!/usr/bin/bash
 
 ldconfig -m /lib
-ldconfig -m /usr/li
+ldconfig -m /usr/lib
 ldconfig -m /usr/lib/fakeroot
 ldconfig -m /usr/lib/pth
 ldconfig -m /usr/local/lib
