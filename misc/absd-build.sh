@@ -243,7 +243,7 @@ mount -t procfs procfs "${builddir}/proc" || die "Failed to mount procfs"
 
 if (( $opt_kill_ld )); then
 	msg "Killing previous ld-hints"
-	rm -f "${builddir}/var/run/ld{,-elf,elf32,32}.so.hints"
+	rm -f "${builddir}/var/run/ld"{,-elf,elf32,32}".so.hints"
 fi
 
 msg "Running setup script %s" "$setup_script"
