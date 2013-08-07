@@ -60,6 +60,9 @@ gpart add -t freebsd-ufs $boot # should become ${boot}p2
 msg " Setting up boot-loader..."
 gpart bootcode -b /boot/pmbr -p /boot/gptzfsboot -i1 $boot
 
+msg " Formatting boot-disk..."
+newfs -U -L boot /dev/${boot}p2
+
 msg " Mounting /boot in /tmp..."
 mkdir /tmp/boot
 mount /dev/${boot}p2 /tmp/boot
