@@ -5,5 +5,5 @@ ldconfig -m /usr/lib
 ldconfig -m /usr/lib/fakeroot
 ldconfig -m /usr/lib/pth
 ldconfig -m /usr/local/lib
-ldconfig -m -32 /usr/lib32
+ldconfig -32 -m /usr/lib32
 ldconfig -R
