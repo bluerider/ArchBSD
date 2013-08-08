@@ -53,6 +53,7 @@ options:
   -S      open a shell in the chroot as root
   -R      add -R to makepkg
   -e      pass -e to makepkg (keeping previous pkg/ and src/ dirs intact)
+  -L      remove ld-elf.so.hints before trying to chroot
   -i PKG  install this package before building (NOT recommended)
 EOF
 }
@@ -67,8 +68,9 @@ opt_shell=0
 opt_install=()
 opt_repackage=0
 opt_keepbuild=0
+opt_kill_ld=0
 OPTIND=1
-while getopts ":hknxyuCsSRei:" opt; do
+while getopts ":hknxyuCsSReLi:" opt; do
 	case $opt in
 		h) usage; exit 0;;
 		k) opt_kill=1 ;;
@@ -82,6 +84,7 @@ while getopts ":hknxyuCsSRei:" opt; do
 		i) opt_update_install=1; opt_install=("${opt_install[@]}" $OPTARG) ;;
 		R) opt_noclean=1 ; opt_existing_install=1 ; opt_repackage=1 ; opt_keepbuild=1 ;;
 		e) opt_keepbuild=1 ;;
+		L) opt_kill_ld=1 ;;
 		\:) usage ; exit 1 ;;
 		\?) usage ; exit 1 ;;
 		*) : ;;
@@ -237,6 +240,11 @@ want_unmount=1
 mount_nullfs {,"${builddir}"}/var/cache/pacman/pkg || die "Failed to bind package cache"
 mount -t devfs devfs "${builddir}/dev" || die "Failed to mount devfs"
 mount -t procfs procfs "${builddir}/proc" || die "Failed to mount procfs"
+
+if (( $opt_kill_ld )); then
+	msg "Killing previous ld-hints"
+	rm -f "${builddir}/var/run/ld"{,-elf,elf32,32}".so.hints"
+fi
 
 msg "Running setup script %s" "$setup_script"
 install -m644 "$setup_script" "${builddir}/root/setup.sh"
