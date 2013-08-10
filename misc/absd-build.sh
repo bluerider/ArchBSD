@@ -194,9 +194,7 @@ builddir="$buildtop/$repo/$package"
 #
 if (( ! $opt_noclean )); then
 	msg "Cleaning previous work..."
-	umount "${builddir}/dev" 2>/dev/null
-	umount "${builddir}/proc" 2>/dev/null
-	umount "${builddir}/var/cache/pacman/pkg" 2>/dev/null
+	do_unmount 2>/dev/null
 	find "$builddir" -print0 | xargs -0 chflags noschg
 	rm -rf "$builddir"
 	if (( $opt_kill )); then exit 0; fi
