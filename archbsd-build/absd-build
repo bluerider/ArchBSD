@@ -39,6 +39,13 @@ cmdopt_noconfirm() {
 }
 cmdopt_help() {
 	usage
+	cat <<EOF
+
+maintaining a ZFS base system:
+  $progname init      initialize a new subvolume
+  $progname update    update an existing subvolume
+  $progname remove    remove the base subvolume
+EOF
 	exit 0
 }
 cmdopt_usershell() {

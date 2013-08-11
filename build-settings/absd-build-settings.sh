@@ -9,6 +9,17 @@
 abstree=/var/absd/abstree
 buildtop=/var/absd/buildtop
 
+# ZFS settings
+# subvol:
+#   The name of the subvolume to maintain with absd-build
+#   When set to INVALID ZFS support will be disabled.
+#   'absd-init' will initialize the pool with mountpoint=legacy
+# Example: zpool/build_base
+#subvol=INVALID
+
+# optional zfs compression
+#zfs_compression=gzip
+
 # These can be changed if necessary
 #package_output=${buildtop}/output
 #builder_bashrc=${buildtop}/bashrc
