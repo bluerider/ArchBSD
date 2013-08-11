@@ -82,7 +82,7 @@ while getopts ":hknxyuCsSReLi:" opt; do
 		u) opt_update_install=1; opt_existing_install=1 ; opt_noclean=1 ;;
 		C) opt_confirm="" ;;
 		i) opt_update_install=1; opt_install=("${opt_install[@]}" $OPTARG) ;;
-		R) opt_noclean=1 ; opt_existing_install=1 ; opt_repackage=1 ; opt_keepbuild=1 ;;
+		R) opt_repackage=1 ; opt_noclean=1 ; opt_existing_install=1 ; opt_keepbuild=1 ;;
 		e) opt_keepbuild=1 ;;
 		L) opt_kill_ld=1 ;;
 		\:) usage ; exit 1 ;;
@@ -167,8 +167,10 @@ fulloutput="$package_output/$repo"
 #
 # Check options
 #
-[ -d "$fullpath" ] || die "No such package found in abs-tree"
-[ -e "$fullpath/PKGBUILD" ] || die "No PKGBUILD found for package %s" "$package"
+if (( ! $opt_kill )); then
+	[ -d "$fullpath" ] || die "No such package found in abs-tree"
+	[ -e "$fullpath/PKGBUILD" ] || die "No PKGBUILD found for package %s" "$package"
+fi
 
 #
 # Create source package
@@ -178,7 +180,9 @@ cd "$fullpath"
 #makepkg -Sf || die "failed creating src package"
 
 srcpkg=$(getsource)
-[ -f "$srcpkg" ] || die "Not a valid source package: %s" "$srcpkg"
+if (( ! $opt_kill )); then
+	[ -f "$srcpkg" ] || die "Not a valid source package: %s" "$srcpkg"
+fi
 
 #
 # Build paths:
