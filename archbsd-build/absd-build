@@ -49,6 +49,7 @@ EOF
 	exit 0
 }
 wantshell=0
+opt_shell=0
 cmdopt_usershell() {
 	opt_shell=1
 }
