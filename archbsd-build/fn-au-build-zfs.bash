@@ -152,6 +152,7 @@ zfs_clean_previous() {
 	do_unmount
 	zfs_remove_dataset "$repovol"
 	zfs_remove_dataset "$snapshot"
+	rm -rf "$builddir"
 }
 
 zfs_create_chroot() {

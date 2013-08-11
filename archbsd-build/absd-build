@@ -48,11 +48,13 @@ maintaining a ZFS base system:
 EOF
 	exit 0
 }
+wantshell=0
 cmdopt_usershell() {
 	opt_shell=1
 }
 cmdopt_rootshell() {
 	opt_shell=2
+	let wantshell++
 }
 cmdopt_zfs() {
 	zfs_check
@@ -131,7 +133,9 @@ else
 	configure_chroot
 fi
 create_builder_home
-syncdeps
+if (( $wantshell < 3 )); then
+	syncdeps
+fi
 run_prepare
 
 if (( $opt_shell == 1 )); then
