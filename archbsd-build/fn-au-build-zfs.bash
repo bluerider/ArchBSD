@@ -158,6 +158,10 @@ zfs_clean_previous() {
 zfs_create_chroot() {
 	if zvol_exists "$repovol"; then
 		msg "using existing snapshot"
+		if ! mount | grep -q "^$repovol on $builddir"; then
+			mount -t zfs "$repovol" "$builddir" \
+			|| die "Failed to mount existing clone"
+		fi
 		return
 	fi
 
