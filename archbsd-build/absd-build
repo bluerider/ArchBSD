@@ -28,6 +28,8 @@ cmd_options=(
 	"e keepbuild   pass -e to makepkg (keeping previous pkg/ and src/ dirs intact)"
 	"L kill_ld     remove ld-elf.so.hints before trying to chroot"
 	"Z zfs         use an existing ZFS base"
+	"M mountonly   only mount the ZFS base and quit"
+	"P prepare     run the prepare script"
 	"i:PKG addpkg  install this package before building (NOT recommended)"
 )
 
@@ -70,7 +72,8 @@ while imply update    existing            || \
       imply keepbuild existing            || \
       imply usershell keepbuild           || \
       imply rootshell keepbuild           || \
-      imply repackage keepbuild
+      imply repackage keepbuild           || \
+      imply mountonly zfs
 do :; done
 
 makepkgargs=()
@@ -104,7 +107,7 @@ builddir="$buildtop/$repo/$package"
 #
 # Check options
 #
-if (( ! $opt_kill )); then
+if (( ! $opt_kill && ! $opt_mountonly )); then
 	[ -d "$fullpath" ] || die "No such package found in abs-tree"
 	[ -e "$fullpath/PKGBUILD" ] || die "No PKGBUILD found for package %s" "$package"
 	srcpkg=$(getsource)
@@ -124,6 +127,10 @@ if (( $opt_zfs )); then
 		if (( $opt_kill )); then exit 0; fi
 	fi
 	zfs_create_chroot
+	if (( $opt_mountonly )); then
+		msg "mounted"
+		exit 0
+	fi
 	mount_into_chroot
 else
 	if (( ! $opt_noclean )); then
@@ -133,11 +140,15 @@ else
 	create_chroot
 	configure_chroot
 fi
-create_builder_home
+if (( $opt_prepare )); then
+	run_prepare
+fi
+if (( $wantshell < 4 )); then
+	create_builder_home
+fi
 if (( $wantshell < 3 )); then
 	syncdeps
 fi
-run_prepare
 
 if (( $opt_shell == 1 )); then
 	msg "Entering chroot as builder"

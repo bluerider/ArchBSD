@@ -122,17 +122,16 @@ mount_into_chroot() {
 	mount -t procfs procfs "${builddir}/proc" || die "Failed to mount procfs"
 }
 
+inroot() {
+	chroot "${builddir}" "$@"
+}
+
 configure_chroot() {
 	echo 'PACKAGER="'"$PACKAGER"\" >> "$builddir/etc/makepkg.conf" \
 		|| die "Failed to add PACKAGER information"
 
 	install -dm755 "${builddir}/var/cache/pacman/pkg" || die "Failed to setup package cache mountpoint"
 	mount_into_chroot
-
-	if (( $opt_kill_ld )); then
-		msg "Killing previous ld-hints"
-		rm -f "${builddir}/var/run/ld"{,-elf,elf32,32}".so.hints"
-	fi
 
 	msg "Running setup script %s" "$setup_script"
 	install -m644 "$setup_script" "${builddir}/root/setup.sh"
@@ -185,6 +184,11 @@ syncdeps() {
 }
 
 run_prepare() {
+	if (( $opt_kill_ld )); then
+		msg "Killing previous ld-hints"
+		rm -f "${builddir}/var/run/ld"{,-elf,elf32,32}".so.hints"
+	fi
+
 	msg "Running prepare script %s" "$prepare_script"
 	install -m644 "$prepare_script" "${builddir}/root/prepare.sh"
 	chroot "${builddir}" /usr/bin/bash /root/prepare.sh

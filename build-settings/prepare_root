@@ -7,5 +7,6 @@ ldconfig -m /usr/lib/pth
 ldconfig -m /usr/local/lib
 ldconfig -32 -m /usr/lib32
 # seems to be necessary for gcc to find the libraries
-ldconfig -m /usr/lib32
+#ldconfig -m /usr/lib32
 ldconfig -R
+ldconfig -32 -R
