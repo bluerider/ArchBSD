@@ -32,7 +32,7 @@ cmd_setup() {
 		printf("declare -f cmdopt_" $2 " > /dev/null || cmdopt_" $2 "() {\n:\n}\n");
 		split($1,arg,":");
 		printf("cmdopt_" arg[1] "() {\nopt_" $2 "=1\ncmdopt_" $2 "\n}\n");
-		print("opt_" $2 "=0");
+		print("opt_" $2 "=${opt_" $2 ":-0}");
 	}'
 }
 
