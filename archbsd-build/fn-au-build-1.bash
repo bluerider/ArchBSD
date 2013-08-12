@@ -122,6 +122,10 @@ mount_into_chroot() {
 	mount -t procfs procfs "${builddir}/proc" || die "Failed to mount procfs"
 }
 
+inroot() {
+	chroot "${builddir}" "$@"
+}
+
 configure_chroot() {
 	echo 'PACKAGER="'"$PACKAGER"\" >> "$builddir/etc/makepkg.conf" \
 		|| die "Failed to add PACKAGER information"
