@@ -140,7 +140,7 @@ else
 	create_chroot
 	configure_chroot
 fi
-if (( $prepare )); then
+if (( $opt_prepare )); then
 	run_prepare
 fi
 if (( $wantshell < 4 )); then
