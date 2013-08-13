@@ -29,7 +29,7 @@ cmd_options=(
 	"L kill_ld     remove ld-elf.so.hints before trying to chroot"
 	"Z zfs         use an existing ZFS base"
 	"M mountonly   only mount the ZFS base and quit"
-	"P prepare     run the prepare script"
+	"P noprepare   do not run the prepare script"
 	"i:PKG addpkg  install this package before building (NOT recommended)"
 )
 
@@ -140,7 +140,7 @@ else
 	create_chroot
 	configure_chroot
 fi
-if (( $opt_prepare )); then
+if (( ! $opt_noprepare )); then
 	run_prepare
 fi
 if (( $wantshell < 4 )); then
