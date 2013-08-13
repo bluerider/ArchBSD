@@ -10,7 +10,7 @@ for i in ${ldconfig_local_dirs}; do
 	if [ -d "$i" ]; then
 		_files=`find "$i" -type f`
 		if [ -n "$_files" ]; then
-			ldconfig_paths="${ldconfig_paths} `cat "$_files" | sort -u`"
+			ldconfig_paths="${ldconfig_paths} `cat ${_files} | sort -u`"
 		fi
 	fi
 done
