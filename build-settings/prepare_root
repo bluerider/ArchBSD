@@ -4,7 +4,7 @@ source /etc/defaults/rc.conf
 
 ldconfig_paths=""
 ldconfig32_paths=""
-_LDC="/lib /usr/lib"
+_LDC="/usr/lib /lib"
 
 for i in ${ldconfig_local_dirs}; do
 	if [ -d "$i" ]; then
