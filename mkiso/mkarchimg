@@ -1,0 +1,57 @@
+#!/usr/bin/bash
+
+################################
+# Generate Minimal ArchBSD IMG #
+################################
+
+source ./fn-common.bash
+
+imgfile="ArchBSD-$(uname -p)-${date}.img"
+mdsize="768"
+
+setupmd() {
+	if [ ! -f ${imgfile} ]; then
+		dd if=/dev/zero of=./${imgfile} bs=1M count=${mdsize}
+	fi
+	mdconfig -a -t vnode -f ./${imgfile} -u 1337
+	if [ ! $? ]; then
+		echo "Can't create md1337 :("
+		exit 1
+	fi
+
+	gpart show md1337
+	if [ $? -ne 0 ]; then
+		gpart create -s MBR md1337
+		gpart add -t freebsd md1337
+		gpart create -s BSD md1337s1
+		gpart add -t freebsd-ufs md1337s1
+		newfs -U -j -L archbsd /dev/md1337s1a
+		gpart bootcode -b /boot/boot0 md1337
+		gpart bootcode -b /boot/boot md1337s1
+	fi
+
+	mount /dev/md1337s1a ${isoroot}
+}
+
+destroymd() {
+	umount ${isoroot}
+	mdconfig -d -u 1337
+}
+
+check
+
+setupmd
+
+mktemproot
+
+mkdirlayout
+
+copyfiles
+
+copydirs
+
+package_install
+
+config_setup
+
+destroymd
