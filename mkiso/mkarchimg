@@ -21,9 +21,10 @@ setupmd() {
 
 	gpart show md1337
 	if [ $? -ne 0 ]; then
-		gpart create -s MBR md1337
+		gpart create -s mbr md1337
 		gpart add -t freebsd md1337
-		gpart create -s BSD md1337s1
+		gpart set -a active -i 1 md1337
+		gpart create -s bsd md1337s1
 		gpart add -t freebsd-ufs md1337s1
 		newfs -U -j -L archbsd /dev/md1337s1a
 		gpart bootcode -b /boot/boot0 md1337
@@ -32,6 +33,20 @@ setupmd() {
 
 	mount /dev/md1337s1a ${isoroot}
 }
+
+#grub_install1() {
+#	grubpath=${isoroot}/boot/grub/
+#	pacman -Sydd grub-common grub-bios -r ${isoroot} --cachedir ${temproot}/var/cache/pacman/pkg/ --noconfirm
+#	
+#       cp -Rv ${isoroot}/usr/lib/grub/i386-pc ${grubpath}
+#	rm -rf ${isoroot}/usr/lib/grub/i386-pc
+#
+#	cp ${files}/{grub.cfg.mem,eltorito.img,splash.png,font.pf2} ${grubpath}
+#	
+#	mv ${grubpath}/grub.cfg.mem ${grubpath}/grub.cfg
+#
+#	grub-install --no-floppy --recheck --debug --modules="ufs2 bsd" --root-directory=${isoroot} --directory=${grubpath}i386-pc /dev/md1337
+#}
 
 destroymd() {
 	umount ${isoroot}
@@ -52,6 +67,12 @@ copydirs
 
 package_install
 
+#grub_install1
+
 config_setup
 
+  rm -rf ${isoroot}/etc/fstab
+  rm -rf ${isoroot}/boot/loader.conf
+  install -m755 ${files}/fstab.mem ${isoroot}/etc/fstab
+  install -m755 ${files}/loader.conf.mem ${isoroot}/boot/loader.conf
 destroymd
