@@ -1,0 +1,5 @@
+*.iso
+*.img
+*.xz
+*.sig
+md5*.txt
